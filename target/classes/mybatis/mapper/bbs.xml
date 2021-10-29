@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bbs">
+  
+ <resultMap type="mybatis.vo.BbsVO" id="map1">
+ 	<id property="b_idx" column="b_idx"/>
+ 	<collection property="c_list" ofType="mybatis.vo.ComVO"
+ 	 select="searchs" column="b_idx"/>
+ </resultMap> 
+ 
+ <!-- 특정 게시물의 기본키인 b_idx를 받아서 해당 게시물의 댓글들을 모두 반환한다. -->
+ <select id="searchs" parameterType="String" resultType="mybatis.vo.ComVO">
+ 	SELECT * FROM comment_t
+ 	WHERE b_idx = ${no} ORDER BY c_idx DESC
+
+ </select>
+ 
+  <select id="list" parameterType="java.util.Map" resultMap="map1">
+  	SELECT * FROM(
+	  	SElECT rownum r_num,a.* FROM (
+		  	SELECT * FROM bbs_t
+		  	WHERE status = 0 AND bname = #{bname}
+		  	ORDER BY b_idx DESC
+		) a 
+	) WHERE r_num BETWEEN #{begin} AND #{end}
+  </select>
+  
+  <!-- 총 게시물을 반환하는 문장 -->
+  <select id="total" resultType="int" parameterType="String">
+  	SELECT COUNT(*) FROM bbs_t
+  	WHERE status = 0 AND bname = #{no}
+  </select>
+  
+  <!--  제목 클릭시 화면 보여주기 
+  		댓글들의 정보를 가져오기 위해서는 위해서resultMap을 했던 정보를 불러서 한다.
+  -->
+  <select id="view" parameterType="String" resultMap="map1">
+  	SELECT * FROM bbs_t
+  	WHERE b_idx = #{no}
+  </select>
+  
+  <!-- 원글을 저장하는 기능!! -->
+  <insert id="add" parameterType="mybatis.vo.BbsVO">
+   	INSERT INTO bbs_t(b_idx, subject, writer, content<if test="file_name != null"> ,file_name</if><if test="ori_name != null">,ori_name</if> ,pwd, write_date, ip, hit, status, bname)
+   	VALUES(bbs_t_seq.NEXTVAL,#{subject},#{writer},#{content}<if test="file_name != null">,#{file_name}</if><if test="ori_name != null">,#{ori_name}</if>,#{pwd},sysdate,#{ip},0,0,#{bname})
+   </insert>
+   
+   <!-- 댓글 저장하는 기능!! -->
+   <insert id="addcom" parameterType="mybatis.vo.ComVO">
+   		INSERT INTO comment_t(c_idx,writer,content,write_date,ip,b_idx,pwd)
+   		VALUES(comment_t_seq.NEXTVAL, #{writer}, #{content}, sysdate, #{ip}, #{b_idx},#{pwd})
+   		 
+   </insert>
+   
+   <!-- 원글 수정 -->
+   <update id="edit" parameterMap="mybatis.vo.BbsVO">
+   		UPDATE bbs_t 
+   		SET subject = #{subject},
+   			content = #{content},
+   			ip = #{ip}
+   			<if test="file_name != null">
+   				,file_name = #{file_name}
+   				,ori_name = #{ori_name}
+   			</if>
+   			WHERE b_idx = #{b_idx) AND pwd = #{pwd}
+   </update>
+   
+   <!-- 게시글 삭제 -->
+   <update id="del" parameterType="mybatis.vo.BbsVO">
+   		UPDATE bbs_t
+   		SET status = 1
+   		WHERE b_idx = #{b_idx}
+   </update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
