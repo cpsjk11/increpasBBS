@@ -18,7 +18,7 @@ import spring.sts.util.FileReName;
 
 @Controller
 public class EditorController {
-	
+	//TEST
 	
 	@Autowired
 	private BbsDAO b_dao;
