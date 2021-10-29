@@ -21,5 +21,5 @@ public class DeleteController {
 		mv.setViewName("redirect:/list.inc?cPage="+cPage);
 		return mv;
 	}
-	
+	//TEST!!!
 }
